@@ -12,6 +12,10 @@
 #endif
 #include <Windows.h>
 
+#if !defined( ImGuiKey_KeypadEnter ) && defined( ImGuiKey_KeyPadEnter )
+#define ImGuiKey_KeypadEnter ImGuiKey_KeyPadEnter
+#endif
+
 namespace rh::rw::engine
 {
 
@@ -40,7 +44,7 @@ bool ImGuiWin32DriverHandler::Init( void *hwnd )
     // Keyboard mapping. ImGui will use those indices to peek into the
     // io.KeysDown[] array that we will update during the application
     // lifetime.
-#if IMGUI_VERSION_NUM < 18700
+#if !defined( IMGUI_DISABLE_OBSOLETE_KEYIO )
     io.ImeWindowHandle             = hwnd;
     io.KeyMap[ImGuiKey_Tab]         = VK_TAB;
     io.KeyMap[ImGuiKey_LeftArrow]   = VK_LEFT;
@@ -157,7 +161,7 @@ void ImGuiWin32DriverHandler::NewFrame( const ImGuiInputState &state )
     Time = current_time;
 
     // Read keyboard/mouse input
-#if IMGUI_VERSION_NUM >= 18700
+#if defined( IMGUI_DISABLE_OBSOLETE_KEYIO )
     io.AddKeyEvent( ImGuiMod_Ctrl, state.KeyCtrl );
     io.AddKeyEvent( ImGuiMod_Shift, state.KeyShift );
     io.AddKeyEvent( ImGuiMod_Alt, state.KeyAlt );
@@ -205,7 +209,7 @@ void ImGuiWin32DriverHandler::NewFrame( const ImGuiInputState &state )
     // Update OS mouse position
     UpdateMousePos();
 
-#if IMGUI_VERSION_NUM >= 18700
+#if defined( IMGUI_DISABLE_OBSOLETE_KEYIO )
     io.AddMousePosEvent( state.MousePos[0], state.MousePos[1] );
 #else
     io.MousePos = ImVec2( state.MousePos[0], state.MousePos[1] );
