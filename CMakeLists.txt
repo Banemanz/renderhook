@@ -15,7 +15,13 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # Dependencies
 find_package(imgui CONFIG REQUIRED)
-find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG QUIET)
+if (VulkanMemoryAllocator_FOUND)
+    set(VMA_CMAKE_TARGET GPUOpen::VulkanMemoryAllocator)
+else ()
+    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+    set(VMA_CMAKE_TARGET unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
+endif ()
 find_package(nlohmann_json CONFIG REQUIRED)
 
 add_definitions(-DNOASM)
