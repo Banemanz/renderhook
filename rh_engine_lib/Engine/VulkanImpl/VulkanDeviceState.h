@@ -140,6 +140,6 @@ class VulkanDeviceState : public IDeviceState
 
     ICommandBuffer *       mMainCmdBuffer    = nullptr;
     VulkanMemoryAllocator *mDefaultAllocator = nullptr;
-    vk::DynamicLoader      dl;
+    vk::detail::DynamicLoader dl;
 };
 } // namespace rh::engine
