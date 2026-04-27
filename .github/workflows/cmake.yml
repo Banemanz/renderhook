@@ -53,11 +53,11 @@ jobs:
         # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
         uses: lukka/run-vcpkg@v11
         with:
-          setupOnly: true
+          runVcpkgInstall: false
           vcpkgGitCommitId: 5b1214315250939257ef5d62ecdcbca18cf4fb1c
       # Now that vcpkg is installed, it is being used to run desired arguments.
       - run: |
-          $VCPKG_ROOT/vcpkg install @response_file.txt
+          $VCPKG_ROOT/vcpkg install --binarysource=clear @response_file.txt
         shell: bash
 
       - name: Configure CMake x64
