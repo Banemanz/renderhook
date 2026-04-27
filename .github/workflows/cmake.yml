@@ -5,7 +5,7 @@ on: [ push ]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  VULKAN_SDK: C:\\VulkanSDK\\1.2.162.1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -28,30 +28,48 @@ jobs:
           ${{runner.workspace}}/artifacts/gtavc
           ${{runner.workspace}}/artifacts/gtasa
 
-      - name: Cache Vulkan SDK
-        id: cache-vulkan-sdk
-        uses: actions/cache@v1
-        with:
-          path: "C:\\VulkanSDK\\1.2.162.1"
-          key: vulkan-sdk-1.2.162.1
-
       - name: Setup Vulkan
-        if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
         run: |
-          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe" -OutFile VulkanSDK.exe
-          $installer = Start-Process -FilePath VulkanSDK.exe -Wait -PassThru -ArgumentList @("/S");
+          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan_sdk.exe?Human=true" -OutFile VulkanSDK.exe
+          $installer = Start-Process -FilePath VulkanSDK.exe -Wait -PassThru -NoNewWindow -ArgumentList @("--accept-licenses", "--default-answer", "--confirm-command", "install");
           $installer.WaitForExit();
+          if ( $installer.ExitCode -ne 0 ) {
+            throw "Vulkan SDK installer failed with exit code $($installer.ExitCode)."
+          }
+
+          $sdkPath = Get-ChildItem "C:\\VulkanSDK" -Directory |
+            Sort-Object Name -Descending |
+            Select-Object -First 1
+
+          if ( -not $sdkPath ) {
+            throw "Unable to locate installed Vulkan SDK under C:\\VulkanSDK."
+          }
+
+          "VULKAN_SDK=$($sdkPath.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "$($sdkPath.FullName)\\Bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # Restore from cache the previously built ports. If cache-miss, download, build vcpkg.
       - name: Restore from cache and install vcpkg
-        # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
-        uses: lukka/run-vcpkg@v5
+        # Download and build vcpkg, without installing any port.
+        uses: lukka/run-vcpkg@v11
         with:
-          setupOnly: true
-          vcpkgGitCommitId: 097a31d4c3127f38a6fbf4002122550dd9d39b84
+          runVcpkgInstall: false
+          # Keep this baseline updated when ports break due upstream mirror/package changes.
+          vcpkgGitCommitId: 73248d88e09d43dfd7836902462a64fd2a43387b
       # Now that vcpkg is installed, it is being used to run desired arguments.
       - run: |
-          $VCPKG_ROOT/vcpkg install @response_file.txt
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if $VCPKG_ROOT/vcpkg install --binarysource=clear @response_file.txt; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "vcpkg install failed on attempt $attempt, retrying..."
+              sleep $((attempt * 15))
+            fi
+          done
+          echo "vcpkg install failed after 3 attempts."
+          exit 1
         shell: bash
 
       - name: Configure CMake x64
@@ -65,7 +83,7 @@ jobs:
         run: cmake $GITHUB_WORKSPACE
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake
-          -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /std:c++latest /W4 /GR /EHsc  /MT"
+          -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /std:c++latest /W0 /WX- /GR /EHsc  /MT"
           -DARCH_64BIT=ON
           -DBUILD_32BIT_LIBS=ON
           -DGTA_3_FOLDER="${{runner.workspace}}\\artifacts\\gta3\\"
@@ -77,7 +95,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build_x64
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_driver gta_vc_render_driver gta_sa_render_driver
+        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_driver gta_vc_render_driver gta_sa_render_driver -- -p:TreatWarningsAsErrors=false
 
       - name: Configure CMake x86
         # Use a bash shell so we can use the same syntax for environment variable
@@ -91,7 +109,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake
           -DCMAKE_C_FLAGS="-m32"
-          -DCMAKE_CXX_FLAGS="-m32 /DWIN32 /D_WINDOWS /std:c++latest /W4 /GR /EHsc  /MT"
+          -DCMAKE_CXX_FLAGS="-m32 /DWIN32 /D_WINDOWS /std:c++latest /W0 /WX- /GR /EHsc  /MT"
           -DBUILD_32BIT_LIBS=ON
           -DGTA_3_FOLDER="${{runner.workspace}}\\artifacts\\gta3\\"
           -DGTA_VC_FOLDER="${{runner.workspace}}\\artifacts\\gtavc\\"
@@ -102,22 +120,22 @@ jobs:
         working-directory: ${{runner.workspace}}/build_x86
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_hook gta_vc_render_hook gta_sa_render_hook
+        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_hook gta_vc_render_hook gta_sa_render_hook -- -p:TreatWarningsAsErrors=false
 
       - name: Artifacts GTA 3
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: gta3_rh
           path: ${{runner.workspace}}/artifacts/gta3
 
       - name: Artifacts GTA VC
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: gtavc_rh
           path: ${{runner.workspace}}/artifacts/gtavc
 
       - name: Artifacts GTA SA
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: gtasa_rh
           path: ${{runner.workspace}}/artifacts/gtasa

@@ -6,7 +6,7 @@
 #include "call_redirection_util.h"
 #include <string_view>
 // Windows msg
-#include <Windows.h>
+#include <windows.h>
 #include <filesystem>
 #include <fstream>
 #include <regex>

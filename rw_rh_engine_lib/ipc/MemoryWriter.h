@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <Engine/Common/ArrayProxy.h>
-#include <Windows.h>
+#include <windows.h>
 #include <cstdint>
 namespace rh::rw::engine
 {

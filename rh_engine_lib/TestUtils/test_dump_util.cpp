@@ -3,7 +3,7 @@
 //
 
 #include "test_dump_util.h"
-#include <Windows.h>
+#include <windows.h>
 #include <array>
 #include <fstream>
 namespace rh::engine::tests

@@ -122,20 +122,35 @@ void VulkanImGUI::Init( const VulkanImGUIInitParams &params )
     init_info.CheckVkResultFn           = []( VkResult ) {};
     init_info.MinImageCount             = 2;
     init_info.ImageCount                = 2;
-
     auto render_pass_impl =
         dynamic_cast<VulkanRenderPass *>( params.mRenderPass );
 
+#if IMGUI_VERSION_NUM >= 19200
+    init_info.ApiVersion = VK_API_VERSION_1_3;
+    init_info.PipelineInfoMain.RenderPass =
+        static_cast<VkRenderPass>( static_cast<vk::RenderPass>( *render_pass_impl ) );
+    init_info.PipelineInfoMain.Subpass     = 0;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init( &init_info );
+#else
     ImGui_ImplVulkan_Init( &init_info,
                            static_cast<vk::RenderPass>( *render_pass_impl ) );
+#endif
 }
 bool VulkanImGUI::UploadFonts( ICommandBuffer *cmd_buff )
 {
     if ( mFontsUploaded )
         return true;
+
+#if IMGUI_VERSION_NUM >= 19200
+    (void)cmd_buff;
+    mFontsUploaded = true;
+#else
     auto command_buffer = reinterpret_cast<VulkanCommandBuffer *>( cmd_buff );
     mFontsUploaded =
         ImGui_ImplVulkan_CreateFontsTexture( command_buffer->GetBuffer() );
+#endif
     return mFontsUploaded;
 }
 void VulkanImGUI::DrawGui( ICommandBuffer *cmd_buff )
@@ -154,7 +169,9 @@ void VulkanImGUI::BeginFrame()
 }
 VulkanImGUI::~VulkanImGUI()
 {
+#if IMGUI_VERSION_NUM < 19200
     ImGui_ImplVulkan_DestroyFontUploadObjects();
+#endif
     ImGui_ImplVulkan_Shutdown();
     vkDestroyDescriptorPool( mDevice, mDescriptorPool, nullptr );
     // ImGui_ImplWin32_Shutdown();

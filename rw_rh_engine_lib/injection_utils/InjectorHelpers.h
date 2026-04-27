@@ -1,5 +1,5 @@
 #pragma once
-#include <Windows.h>
+#include <windows.h>
 #include <cstring>
 #include <system_error>
 #include <type_traits>

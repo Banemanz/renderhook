@@ -2,7 +2,7 @@
 #include <Engine\Common\ISwapchain.h>
 #include <Engine\Common\IWindow.h>
 #include <Engine\VulkanImpl\VulkanDeviceState.h>
-#include <Windows.h>
+#include <windows.h>
 #include <conio.h>
 #include <stdio.h>
 #include <tchar.h>

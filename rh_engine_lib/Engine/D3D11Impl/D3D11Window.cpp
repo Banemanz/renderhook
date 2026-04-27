@@ -1,6 +1,6 @@
 #include "D3D11Window.h"
 #include "D3D11Swapchain.h"
-#include <Windows.h>
+#include <windows.h>
 
 using namespace rh::engine;
 

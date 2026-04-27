@@ -10,7 +10,11 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Windows.h>
+#include <windows.h>
+
+#if !defined( ImGuiKey_KeypadEnter ) && defined( ImGuiKey_KeyPadEnter )
+#define ImGuiKey_KeypadEnter ImGuiKey_KeyPadEnter
+#endif
 
 namespace rh::rw::engine
 {
@@ -36,33 +40,6 @@ bool ImGuiWin32DriverHandler::Init( void *hwnd )
         ImGuiBackendFlags_HasSetMousePos; // We can honor io.WantSetMousePos
     // requests (optional, rarely used)
     io.BackendPlatformName = "imgui_impl_win32_rh";
-    io.ImeWindowHandle     = hwnd;
-
-    // Keyboard mapping. ImGui will use those indices to peek into the
-    // io.KeysDown[] array that we will update during the application
-    // lifetime.
-    io.KeyMap[ImGuiKey_Tab]         = VK_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow]   = VK_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow]  = VK_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow]     = VK_UP;
-    io.KeyMap[ImGuiKey_DownArrow]   = VK_DOWN;
-    io.KeyMap[ImGuiKey_PageUp]      = VK_PRIOR;
-    io.KeyMap[ImGuiKey_PageDown]    = VK_NEXT;
-    io.KeyMap[ImGuiKey_Home]        = VK_HOME;
-    io.KeyMap[ImGuiKey_End]         = VK_END;
-    io.KeyMap[ImGuiKey_Insert]      = VK_INSERT;
-    io.KeyMap[ImGuiKey_Delete]      = VK_DELETE;
-    io.KeyMap[ImGuiKey_Backspace]   = VK_BACK;
-    io.KeyMap[ImGuiKey_Space]       = VK_SPACE;
-    io.KeyMap[ImGuiKey_Enter]       = VK_RETURN;
-    io.KeyMap[ImGuiKey_Escape]      = VK_ESCAPE;
-    io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
-    io.KeyMap[ImGuiKey_A]           = 'A';
-    io.KeyMap[ImGuiKey_C]           = 'C';
-    io.KeyMap[ImGuiKey_V]           = 'V';
-    io.KeyMap[ImGuiKey_X]           = 'X';
-    io.KeyMap[ImGuiKey_Y]           = 'Y';
-    io.KeyMap[ImGuiKey_Z]           = 'Z';
 
     return true;
 }
@@ -154,23 +131,43 @@ void ImGuiWin32DriverHandler::NewFrame( const ImGuiInputState &state )
                    TicksPerSecond.QuadPart;
     Time = current_time;
 
-    // Read keyboard modifiers inputs
-    io.KeyCtrl = state.KeyCtrl; //( ::GetKeyState( VK_CONTROL ) & 0x8000 ) != 0;
-    io.KeyShift = state.KeyShift; //( ::GetKeyState( VK_SHIFT ) & 0x8000 ) != 0;
-    io.KeyAlt   = state.KeyAlt;   //( ::GetKeyState( VK_MENU ) & 0x8000 ) != 0;
-    io.KeySuper = false;
-    // Filled by window proc handler on client side
+    // Read keyboard/mouse input
+    io.AddKeyEvent( ImGuiMod_Ctrl, state.KeyCtrl );
+    io.AddKeyEvent( ImGuiMod_Shift, state.KeyShift );
+    io.AddKeyEvent( ImGuiMod_Alt, state.KeyAlt );
+    io.AddKeyEvent( ImGuiMod_Super, false );
+
+    io.AddKeyEvent( ImGuiKey_Tab, state.KeysDown[VK_TAB] );
+    io.AddKeyEvent( ImGuiKey_LeftArrow, state.KeysDown[VK_LEFT] );
+    io.AddKeyEvent( ImGuiKey_RightArrow, state.KeysDown[VK_RIGHT] );
+    io.AddKeyEvent( ImGuiKey_UpArrow, state.KeysDown[VK_UP] );
+    io.AddKeyEvent( ImGuiKey_DownArrow, state.KeysDown[VK_DOWN] );
+    io.AddKeyEvent( ImGuiKey_PageUp, state.KeysDown[VK_PRIOR] );
+    io.AddKeyEvent( ImGuiKey_PageDown, state.KeysDown[VK_NEXT] );
+    io.AddKeyEvent( ImGuiKey_Home, state.KeysDown[VK_HOME] );
+    io.AddKeyEvent( ImGuiKey_End, state.KeysDown[VK_END] );
+    io.AddKeyEvent( ImGuiKey_Insert, state.KeysDown[VK_INSERT] );
+    io.AddKeyEvent( ImGuiKey_Delete, state.KeysDown[VK_DELETE] );
+    io.AddKeyEvent( ImGuiKey_Backspace, state.KeysDown[VK_BACK] );
+    io.AddKeyEvent( ImGuiKey_Space, state.KeysDown[VK_SPACE] );
+    io.AddKeyEvent( ImGuiKey_Enter, state.KeysDown[VK_RETURN] );
+    io.AddKeyEvent( ImGuiKey_Escape, state.KeysDown[VK_ESCAPE] );
+    io.AddKeyEvent( ImGuiKey_KeypadEnter, state.KeysDown[VK_RETURN] );
+    io.AddKeyEvent( ImGuiKey_A, state.KeysDown['A'] );
+    io.AddKeyEvent( ImGuiKey_C, state.KeysDown['C'] );
+    io.AddKeyEvent( ImGuiKey_V, state.KeysDown['V'] );
+    io.AddKeyEvent( ImGuiKey_X, state.KeysDown['X'] );
+    io.AddKeyEvent( ImGuiKey_Y, state.KeysDown['Y'] );
+    io.AddKeyEvent( ImGuiKey_Z, state.KeysDown['Z'] );
+
     for ( auto i = 0; i < 5; i++ )
-        io.MouseDown[i] = state.MouseDown[i];
-    for ( auto i = 0; i < 512; i++ )
-        io.KeysDown[i] = state.KeysDown[i];
-    io.MouseWheel  = state.MouseWheel;
-    io.MouseWheelH = state.MouseWheelH;
+        io.AddMouseButtonEvent( i, state.MouseDown[i] );
+    io.AddMouseWheelEvent( state.MouseWheelH, state.MouseWheel );
 
     // Update OS mouse position
     UpdateMousePos();
 
-    io.MousePos = ImVec2( state.MousePos[0], state.MousePos[1] );
+    io.AddMousePosEvent( state.MousePos[0], state.MousePos[1] );
 
     // Update OS mouse cursor with the cursor requested by imgui
     ImGuiMouseCursor mouse_cursor =

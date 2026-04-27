@@ -4,7 +4,7 @@
 
 #include <utility>
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 
 std::thread rh::tests::WindowsSampleWrapper::ms_renderingThread;
 std::unique_ptr<rh::tests::TestSample>

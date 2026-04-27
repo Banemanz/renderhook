@@ -5,7 +5,7 @@
 #pragma once
 #include "MemoryReader.h"
 #include "MemoryWriter.h"
-#include <Windows.h>
+#include <windows.h>
 #include <cstdint>
 #include <functional>
 #include <memory>
