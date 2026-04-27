@@ -50,11 +50,12 @@ jobs:
 
       # Restore from cache the previously built ports. If cache-miss, download, build vcpkg.
       - name: Restore from cache and install vcpkg
-        # Download and build vcpkg, without installing any port. Use the action's current baseline
-        # to avoid stale MSYS package URLs from old vcpkg snapshots.
+        # Download and build vcpkg, without installing any port.
         uses: lukka/run-vcpkg@v11
         with:
           runVcpkgInstall: false
+          # Keep this baseline updated when ports break due upstream mirror/package changes.
+          vcpkgGitCommitId: 73248d88e09d43dfd7836902462a64fd2a43387b
       # Now that vcpkg is installed, it is being used to run desired arguments.
       - run: |
           set -euo pipefail
