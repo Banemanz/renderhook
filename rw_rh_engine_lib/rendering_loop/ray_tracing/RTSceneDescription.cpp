@@ -178,7 +178,7 @@ void RTSceneDescription::RecordDrawCall( const DrawCallInfo &dc,
     for ( auto i = 0; i < material_count; i++ )
     {
         mSceneMaterials[i + mMaterials] = materials[i];
-        auto get_pool_id = [this, &raster_pool]( auto orig_tex_id )
+        auto get_pool_id = [this, &raster_pool]( auto orig_tex_id ) -> int32_t
         {
             if ( orig_tex_id == BackendRasterPlugin::NullRasterId )
                 return -1;
@@ -187,8 +187,8 @@ void RTSceneDescription::RecordDrawCall( const DrawCallInfo &dc,
             {
                 auto img_view =
                     raster_pool.GetResource( orig_tex_id ).mImageView;
-                tex_pool_id =
-                    mTexturePool->StoreTexture( img_view, orig_tex_id );
+                tex_pool_id = static_cast<int32_t>(
+                    mTexturePool->StoreTexture( img_view, orig_tex_id ) );
             }
             return tex_pool_id;
         };
@@ -203,8 +203,9 @@ void RTSceneDescription::RecordDrawCall( const DrawCallInfo &dc,
     }
 
     obj_desc.objId         = mModelBuffersPool->GetModelId( dc.MeshId );
-    obj_desc.txtOffset     = mMaterials;
-    obj_desc.triangleCount = mesh.mIndexCount / 3;
+    obj_desc.txtOffset = static_cast<uint32_t>( mMaterials );
+    obj_desc.triangleCount =
+        static_cast<uint32_t>( mesh.mIndexCount / 3 );
 
     std::copy( &dc.WorldTransform.m[0][0], &dc.WorldTransform.m[0][0] + 3 * 4,
                &obj_desc.transform.m[0][0] );
