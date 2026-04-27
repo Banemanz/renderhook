@@ -50,14 +50,25 @@ jobs:
 
       # Restore from cache the previously built ports. If cache-miss, download, build vcpkg.
       - name: Restore from cache and install vcpkg
-        # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
+        # Download and build vcpkg, without installing any port. Use the action's current baseline
+        # to avoid stale MSYS package URLs from old vcpkg snapshots.
         uses: lukka/run-vcpkg@v11
         with:
           runVcpkgInstall: false
-          vcpkgGitCommitId: 5b1214315250939257ef5d62ecdcbca18cf4fb1c
       # Now that vcpkg is installed, it is being used to run desired arguments.
       - run: |
-          $VCPKG_ROOT/vcpkg install --binarysource=clear @response_file.txt
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if $VCPKG_ROOT/vcpkg install --binarysource=clear @response_file.txt; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "vcpkg install failed on attempt $attempt, retrying..."
+              sleep $((attempt * 15))
+            fi
+          done
+          echo "vcpkg install failed after 3 attempts."
+          exit 1
         shell: bash
 
       - name: Configure CMake x64
