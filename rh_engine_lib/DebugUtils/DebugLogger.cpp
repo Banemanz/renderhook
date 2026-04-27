@@ -5,6 +5,10 @@
 #include <array>
 #include <fstream>
 
+#ifndef TEXT
+#define TEXT( x ) x
+#endif
+
 using namespace rh::debug;
 
 std::unique_ptr<rh::engine::OutFileStream> DebugLogger::m_pLogStream = nullptr;

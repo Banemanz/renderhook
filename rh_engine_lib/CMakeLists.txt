@@ -85,13 +85,13 @@ endif ()
 set(SOURCES ${SOURCES}
         Engine/EngineConfigBlock.cpp
         TestUtils/TestSample.cpp
-        TestUtils/BitmapLoader.cpp
         DebugUtils/DebugLogger.cpp
         ConfigUtils/ConfigurationManager.cpp
         ConfigUtils/Serializable.cpp)
 
 if (WIN32)
     set(SOURCES ${SOURCES}
+            TestUtils/BitmapLoader.cpp
             TestUtils/test_dump_util.cpp
             DebugUtils/Win32UncaughtExceptionHandler.cpp)
 endif ()

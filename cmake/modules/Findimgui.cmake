@@ -2,6 +2,7 @@ include(FindPackageHandleStandardArgs)
 
 find_path(imgui_INCLUDE_DIR
     NAMES imgui.h
+    PATHS /usr/include/imgui /usr/local/include/imgui
     PATH_SUFFIXES imgui
 )
 

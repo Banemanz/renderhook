@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "../ConfigUtils/ConfigBlock.h"
+#include <cstdint>
 
 namespace rh::engine
 {

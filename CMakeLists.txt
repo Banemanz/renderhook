@@ -45,7 +45,9 @@ add_subdirectory(rh_engine_lib)
 
 # RenderWare to RenderHook engine wrapper library, contains RW functions, platform-specific
 # functions implemented using RenderHook engine and pointer tables used to replace RW engine backends.
-add_subdirectory(rw_rh_engine_lib)
+if (WIN32)
+    add_subdirectory(rw_rh_engine_lib)
+endif ()
 
 if (BUILD_TESTS)
     add_subdirectory(Tests)

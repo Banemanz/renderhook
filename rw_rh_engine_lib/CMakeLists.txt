@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.12)
 project(rw_rh_engine_lib)
 
 include_directories(
-        /
-        ../rh_engine_lib/
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/rh_engine_lib
         ${DEPENDENCY_INCLUDE_LIST}
 )
 set(SOURCES
