@@ -207,12 +207,22 @@ engine::SharedMemoryTaskQueue::~SharedMemoryTaskQueue()
     int64_t id, std::function<void( MemoryWriter &&reader )> &&serializer,
     std::function<void( MemoryReader &&writer )> &&deserializer )
 {
-    WaitForSingleObject( mMemoryMutex, INFINITE );
+    if ( WaitForSingleObject( mMemoryMutex, INFINITE ) != WAIT_OBJECT_0 )
+    {
+        debug::DebugLogger::Log(
+            "Failed to lock IPC queue mutex, skipping task.",
+            debug::LogLevel::Error );
+        return;
+    }
 
     *static_cast<int64_t *>( mMappedMemory ) = id;
     serializer( static_cast<char *>( mMappedMemory ) + sizeof( int64_t ) );
     SetEvent( mTaskStartEvent );
 
+    constexpr DWORD kTaskWaitSliceMs = 100;
+    constexpr DWORD kTaskWaitLimitMs = 10000;
+
+    DWORD total_wait_time = 0;
     DWORD wait_res = WaitForSingleObject( mTaskFinishEvent, 100 );
     while ( wait_res == WAIT_TIMEOUT )
     {
@@ -223,7 +233,27 @@ engine::SharedMemoryTaskQueue::~SharedMemoryTaskQueue()
             TranslateMessage( &m );
             DispatchMessage( &m );
         }
-        wait_res = WaitForSingleObject( mTaskFinishEvent, 100 );
+
+        total_wait_time += kTaskWaitSliceMs;
+        if ( total_wait_time >= kTaskWaitLimitMs )
+        {
+            debug::DebugLogger::Log(
+                "IPC task timeout, render driver did not answer in time.",
+                debug::LogLevel::Error );
+            ReleaseMutex( mMemoryMutex );
+            return;
+        }
+
+        wait_res = WaitForSingleObject( mTaskFinishEvent, kTaskWaitSliceMs );
+    }
+
+    if ( wait_res != WAIT_OBJECT_0 )
+    {
+        debug::DebugLogger::Log(
+            "IPC task wait failed, render driver synchronization error.",
+            debug::LogLevel::Error );
+        ReleaseMutex( mMemoryMutex );
+        return;
     }
 
     assert( *static_cast<int64_t *>( mMappedMemory ) == id );
