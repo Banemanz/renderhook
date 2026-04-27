@@ -128,7 +128,7 @@ void VulkanImGUI::Init( const VulkanImGUIInitParams &params )
 #if IMGUI_VERSION_NUM >= 19200
     init_info.ApiVersion = VK_API_VERSION_1_3;
     init_info.PipelineInfoMain.RenderPass =
-        static_cast<VkRenderPass>( *render_pass_impl );
+        static_cast<VkRenderPass>( static_cast<vk::RenderPass>( *render_pass_impl ) );
     init_info.PipelineInfoMain.Subpass     = 0;
     init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
