@@ -4,7 +4,7 @@
 
 #include "shared_memory_queue_client.h"
 #include <DebugUtils/DebugLogger.h>
-#include <Windows.h>
+#include <windows.h>
 #include <cassert>
 #include <sstream>
 

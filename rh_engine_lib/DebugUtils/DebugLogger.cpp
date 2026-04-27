@@ -1,5 +1,5 @@
 #include "DebugLogger.h"
-#include <Windows.h>
+#include <windows.h>
 #include <array>
 #include <fstream>
 

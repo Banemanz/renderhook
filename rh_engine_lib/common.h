@@ -38,7 +38,7 @@
 #ifndef ANDROID_BUILD
 #define NOMINMAX
 #include <DirectXMath.h>
-#include <Windows.h>
+#include <windows.h>
 #include <comdef.h>
 #include <d3d11_3.h>
 #include <d3d12.h>

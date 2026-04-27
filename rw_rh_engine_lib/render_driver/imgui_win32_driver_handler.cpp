@@ -10,7 +10,11 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Windows.h>
+#include <windows.h>
+
+#if !defined( ImGuiKey_KeypadEnter ) && defined( ImGuiKey_KeyPadEnter )
+#define ImGuiKey_KeypadEnter ImGuiKey_KeyPadEnter
+#endif
 
 #if !defined( ImGuiKey_KeypadEnter ) && defined( ImGuiKey_KeyPadEnter )
 #define ImGuiKey_KeypadEnter ImGuiKey_KeyPadEnter

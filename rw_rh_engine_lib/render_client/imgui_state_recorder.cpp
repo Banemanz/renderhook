@@ -11,7 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <DebugUtils/DebugLogger.h>
-#include <Windows.h>
+#include <windows.h>
 
 // Win32 message handler (process Win32 mouse/keyboard inputs, etc.)
 LRESULT ImGuiImplWin32WndProcHandler( HWND hwnd, UINT msg, WPARAM w_param,
