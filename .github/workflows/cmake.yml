@@ -95,7 +95,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build_x64
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_driver gta_vc_render_driver gta_sa_render_driver -- /p:TreatWarningsAsErrors=false
+        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_driver gta_vc_render_driver gta_sa_render_driver -- -p:TreatWarningsAsErrors=false
 
       - name: Configure CMake x86
         # Use a bash shell so we can use the same syntax for environment variable
@@ -120,7 +120,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build_x86
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_hook gta_vc_render_hook gta_sa_render_hook -- /p:TreatWarningsAsErrors=false
+        run: cmake --build . --config $BUILD_TYPE --target gta_3_render_hook gta_vc_render_hook gta_sa_render_hook -- -p:TreatWarningsAsErrors=false
 
       - name: Artifacts GTA 3
         uses: actions/upload-artifact@v6
