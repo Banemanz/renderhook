@@ -73,7 +73,7 @@ class RwGameHooks
     static int32_t               Im3DSubmit();
     [[maybe_unused]] static void Im3DOpen();
 
-    static void    CheckNativeTextureSupport();
+    static int32_t CheckNativeTextureSupport();
     static int32_t CheckEnviromentMapSupport();
 
     static int32_t AtomicAllInOneNode( void *self, const void *params );

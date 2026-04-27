@@ -16,6 +16,37 @@
 #include <rw_engine/rw_rh_pipeline.h>
 #include <rw_engine/rw_rh_skin_pipeline.h>
 #include <rw_game_hooks.h>
+#include <filesystem>
+
+namespace
+{
+bool ValidateSupportedGtaSaExe()
+{
+    constexpr uintmax_t kGtaSa10UsExeSize = 5'189'632;
+
+    char module_path[MAX_PATH]{};
+    if ( !GetModuleFileNameA( nullptr, module_path, MAX_PATH ) )
+        return true;
+
+    std::error_code ec{};
+    const auto      exe_size = std::filesystem::file_size( module_path, ec );
+    if ( ec )
+        return true;
+
+    if ( exe_size == kGtaSa10UsExeSize )
+        return true;
+
+    rh::debug::DebugLogger::Log(
+        "Unsupported gta_sa.exe detected. Expected 1.0 US executable "
+        "(5189632 bytes).",
+        rh::debug::LogLevel::Error );
+    MessageBoxA( nullptr,
+                 "RenderHook supports GTA SA 1.0 US executable only.\n"
+                 "Expected gta_sa.exe size: 5,189,632 bytes.",
+                 "RenderHook: Compatibility Issue", MB_OK | MB_ICONERROR );
+    return false;
+}
+} // namespace
 
 using namespace rh::engine;
 using namespace rh::rw::engine;
@@ -209,6 +240,8 @@ BOOL APIENTRY DllMain( HMODULE /*hModule*/, DWORD ul_reason_for_call,
                            reinterpret_cast<RwTextureSetName_FN>( 0x7F3910 ) };
         rh::debug::DebugLogger::Init( "gtasa_logs.log",
                                       rh::debug::LogLevel::Info );
+        if ( !ValidateSupportedGtaSaExe() )
+            break;
 
         rh::rw::engine::IPCSettings::mMode =
             rh::rw::engine::IPCRenderMode::CrossProcessClient;

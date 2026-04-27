@@ -77,7 +77,7 @@ void RwGameHooks::Patch( const RwPointerTable &pointerTable )
             reinterpret_cast<RegisterPluginCall>(
                 pointerTable.mMaterialRegisterPluginPtr );
 
-    if ( pointerTable.mMaterialRegisterPluginPtr )
+    if ( pointerTable.mMaterialSetStreamAlwaysCallbackPtr )
         gRwDeviceGlobals.PluginFuncs.MaterialSetStreamAlwaysCallBack =
             reinterpret_cast<SetStreamAlwaysCallBack>(
                 pointerTable.mMaterialSetStreamAlwaysCallbackPtr );
@@ -152,7 +152,14 @@ void RwGameHooks::Patch( const RwPointerTable &pointerTable )
 
 int32_t RwGameHooks::SetRenderState( int32_t nState, void *pParam )
 {
-    assert( gRenderClient );
+    if ( !gRenderClient )
+    {
+        debug::DebugLogger::Log(
+            "RWGAMEHOOKS_LOG: SetRenderState called before render client "
+            "initialization.",
+            debug::LogLevel::Error );
+        return 1;
+    }
     gRenderClient->RenderState.ImState.Update( nState, pParam );
     return 1;
 }
@@ -179,7 +186,10 @@ void RwGameHooks::SetVideoMode( uint32_t )
 
 [[maybe_unused]] void RwGameHooks::Im3DOpen() {}
 
-void RwGameHooks::CheckNativeTextureSupport() {}
+int32_t RwGameHooks::CheckNativeTextureSupport()
+{
+    return true;
+}
 
 int32_t RwGameHooks::CheckEnviromentMapSupport() { return true; }
 
