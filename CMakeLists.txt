@@ -23,6 +23,7 @@ else ()
     set(VMA_CMAKE_TARGET unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
 endif ()
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 
 add_definitions(-DNOASM)
 if (ARCH_64BIT)
@@ -33,12 +34,7 @@ endif ()
 set(DEPENDENCY_INCLUDE_LIST)
 
 if (USE_VULKAN_API)
-    set(DEPENDENCY_INCLUDE_LIST ${DEPENDENCY_INCLUDE_LIST} $ENV{VULKAN_SDK}/include)
-    if (ARCH_64BIT)
-        set(DEPENDENCY_LIB_LIST $ENV{VULKAN_SDK}/Lib/vulkan-1.lib)
-    else ()
-        set(DEPENDENCY_LIB_LIST $ENV{VULKAN_SDK}/Lib32/vulkan-1.lib)
-    endif ()
+    set(DEPENDENCY_LIB_LIST ${DEPENDENCY_LIB_LIST} Vulkan::Vulkan)
 endif ()
 
 # RenderHook engine library - contains rendering backend implementation and interfaces
