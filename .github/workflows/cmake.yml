@@ -51,10 +51,10 @@ jobs:
       # Restore from cache the previously built ports. If cache-miss, download, build vcpkg.
       - name: Restore from cache and install vcpkg
         # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
-        uses: lukka/run-vcpkg@v5
+        uses: lukka/run-vcpkg@v11
         with:
           setupOnly: true
-          vcpkgGitCommitId: 097a31d4c3127f38a6fbf4002122550dd9d39b84
+          vcpkgGitCommitId: 5b1214315250939257ef5d62ecdcbca18cf4fb1c
       # Now that vcpkg is installed, it is being used to run desired arguments.
       - run: |
           $VCPKG_ROOT/vcpkg install @response_file.txt
