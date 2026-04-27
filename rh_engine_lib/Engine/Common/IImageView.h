@@ -1,5 +1,5 @@
 #pragma once
-#include "types\image_buffer_format.h"
+#include "types/image_buffer_format.h"
 
 namespace rh::engine
 {

@@ -1,5 +1,7 @@
 #include "DebugLogger.h"
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <array>
 #include <fstream>
 
@@ -16,6 +18,7 @@ rh::engine::String ToRHString( const std::string &t_str )
 #ifndef UNICODE
     return t_str;
 #else
+#ifdef _WIN32
     rh::engine::String str;
 
     std::size_t res_size = MultiByteToWideChar( CP_ACP, 0, t_str.c_str(),
@@ -27,6 +30,9 @@ rh::engine::String ToRHString( const std::string &t_str )
                          res_size );
 
     return str;
+#else
+    return rh::engine::String( t_str.begin(), t_str.end() );
+#endif
 #endif
 }
 
@@ -35,6 +41,7 @@ rh::engine::String ToRHString( const std::wstring &t_str )
 #ifdef UNICODE
     return t_str;
 #else
+#ifdef _WIN32
     rh::engine::String str;
     const auto         res_size = WideCharToMultiByte( CP_ACP, 0, t_str.c_str(),
                                                static_cast<int>( t_str.size() ),
@@ -44,6 +51,9 @@ rh::engine::String ToRHString( const std::wstring &t_str )
                          static_cast<int>( t_str.size() ), str.data(),
                          static_cast<int>( res_size ), nullptr, nullptr );
     return str;
+#else
+    return rh::engine::String( t_str.begin(), t_str.end() );
+#endif
 #endif
 }
 
@@ -52,6 +62,7 @@ std::string FromRHString( const rh::engine::String &t_str )
 #ifndef UNICODE
     return t_str;
 #else
+#ifdef _WIN32
     rh::engine::String str;
     std::size_t        res_size = WideCharToMultiByte(
         CP_ACP, 0, t_str.c_str(), t_str.size(), nullptr, 0, nullptr, nullptr );
@@ -59,6 +70,9 @@ std::string FromRHString( const rh::engine::String &t_str )
     WideCharToMultiByte( CP_ACP, 0, t_str.c_str(), t_str.size(), str.data(),
                          res_size, nullptr, nullptr );
     return str;
+#else
+    return std::string( t_str.begin(), t_str.end() );
+#endif
 #endif
 }
 
@@ -67,6 +81,7 @@ std::wstring FromRHString_( const rh::engine::String &t_str )
 #ifdef UNICODE
     return t_str;
 #else
+#ifdef _WIN32
     std::wstring str;
 
     const auto res_size =
@@ -80,6 +95,9 @@ std::wstring FromRHString_( const rh::engine::String &t_str )
                          static_cast<int>( res_size ) );
 
     return str;
+#else
+    return std::wstring( t_str.begin(), t_str.end() );
+#endif
 #endif
 }
 
@@ -110,7 +128,9 @@ void DebugLogger::Log( const engine::String &msg, LogLevel logLevel )
         m_pLogStream->flush();
     }
 
+#ifdef _WIN32
     OutputDebugString( ( msg + TEXT( "\n" ) ).c_str() );
+#endif
 }
 
 void DebugLogger::Error( const engine::String &msg )
@@ -126,11 +146,16 @@ void DebugLogger::Error( const engine::String &msg )
         m_pLogStream->flush();
     }
 
+#ifdef _WIN32
     OutputDebugString( ( msg + TEXT( "\n" ) ).c_str() );
+#endif
 }
 
 void *DebugLogger::GetDebugFileHandle()
 {
+#ifndef _WIN32
+    return nullptr;
+#else
     if ( g_hDebugPipeHandle == nullptr )
     {
         SECURITY_ATTRIBUTES saAttr{};
@@ -144,9 +169,13 @@ void *DebugLogger::GetDebugFileHandle()
         SetHandleInformation( g_hDebugPipeReadHandle, HANDLE_FLAG_INHERIT, 0 );
     }
     return g_hDebugPipeHandle;
+#endif
 }
 void DebugLogger::SyncDebugFile()
 {
+#ifndef _WIN32
+    return;
+#else
     DWORD dwRead;
     CHAR  chBuf[4096];
     BOOL  bSuccess = FALSE;
@@ -162,4 +191,5 @@ void DebugLogger::SyncDebugFile()
     }
     CloseHandle( g_hDebugPipeReadHandle );
     g_hDebugPipeReadHandle = nullptr;
+#endif
 }

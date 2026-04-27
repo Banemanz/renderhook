@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 project(rh_engine_lib)
 
 include_directories(
-        /
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${DEPENDENCY_INCLUDE_LIST}
 )
 
-find_package(imgui CONFIG REQUIRED)
+find_package(imgui REQUIRED)
 
 set(VULKAN_SOURCES
 
@@ -16,7 +16,6 @@ set(VULKAN_SOURCES
         Engine/VulkanImpl/VulkanImageView.cpp
         Engine/VulkanImpl/VulkanCommandBuffer.cpp
         Engine/VulkanImpl/VulkanFrameBuffer.cpp
-        Engine/VulkanImpl/VulkanWin32Window.cpp
         Engine/VulkanImpl/VulkanSwapchain.cpp
         Engine/VulkanImpl/VulkanShader.cpp
         Engine/VulkanImpl/VulkanPipeline.cpp
@@ -38,6 +37,10 @@ set(VULKAN_SOURCES
         Engine/VulkanImpl/VulkanGPUInfo.cpp
         Engine/VulkanImpl/VulkanDebugUtils.cpp
         )
+
+if (WIN32)
+    list(APPEND VULKAN_SOURCES Engine/VulkanImpl/VulkanWin32Window.cpp)
+endif ()
 
 set(D3D11_SOURCES
 
@@ -61,14 +64,18 @@ set(D3D11_SOURCES
 
 # android support for future
 if (ANDROID)
-    set(SOURCES ${SOURCES} ${VULKAN_SOURCES})
+    if (USE_VULKAN_API)
+        set(SOURCES ${SOURCES} ${VULKAN_SOURCES})
+    endif ()
 else ()
-    set(SOURCES ${SOURCES}
-            ${D3D11_SOURCES}
-            Engine/Common/IStateCacheObject.cpp
-            Engine/Win32NativeWindow.cpp
-            TestUtils/WindowsSampleWrapper.cpp
-            )
+    set(SOURCES ${SOURCES} Engine/Common/IStateCacheObject.cpp)
+    if (WIN32)
+        set(SOURCES ${SOURCES}
+                ${D3D11_SOURCES}
+                Engine/Win32NativeWindow.cpp
+                TestUtils/WindowsSampleWrapper.cpp
+                )
+    endif ()
     if (USE_VULKAN_API)
         set(SOURCES ${SOURCES} ${VULKAN_SOURCES}
                 #[[ImGUI/imgui_impl_vulkan.cpp]])
@@ -79,11 +86,15 @@ set(SOURCES ${SOURCES}
         Engine/EngineConfigBlock.cpp
         TestUtils/TestSample.cpp
         TestUtils/BitmapLoader.cpp
-        TestUtils/test_dump_util.cpp
         DebugUtils/DebugLogger.cpp
-        DebugUtils/Win32UncaughtExceptionHandler.cpp
         ConfigUtils/ConfigurationManager.cpp
         ConfigUtils/Serializable.cpp)
+
+if (WIN32)
+    set(SOURCES ${SOURCES}
+            TestUtils/test_dump_util.cpp
+            DebugUtils/Win32UncaughtExceptionHandler.cpp)
+endif ()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 

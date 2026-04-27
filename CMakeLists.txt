@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 cmake_policy(SET CMP0091 NEW)
 project(RenderHook)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
 # Compile with this option OFF if you want full compatibility
 # with older videocards
@@ -14,16 +15,18 @@ set(CLANG_ANALYSER_PATH CACHE PATH "Clang analyser path")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # Dependencies
-find_package(imgui CONFIG REQUIRED)
-find_package(VulkanMemoryAllocator CONFIG QUIET)
-if (VulkanMemoryAllocator_FOUND)
-    set(VMA_CMAKE_TARGET GPUOpen::VulkanMemoryAllocator)
-else ()
-    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
-    set(VMA_CMAKE_TARGET unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
-endif ()
+find_package(imgui REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(Vulkan REQUIRED)
+if (USE_VULKAN_API)
+    find_package(VulkanMemoryAllocator CONFIG QUIET)
+    if (VulkanMemoryAllocator_FOUND)
+        set(VMA_CMAKE_TARGET GPUOpen::VulkanMemoryAllocator)
+    else ()
+        find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+        set(VMA_CMAKE_TARGET unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
+    endif ()
+    find_package(Vulkan REQUIRED)
+endif ()
 
 add_definitions(-DNOASM)
 if (ARCH_64BIT)

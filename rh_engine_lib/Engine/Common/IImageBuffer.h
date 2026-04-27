@@ -1,6 +1,6 @@
 #pragma once
 #include "ArrayProxy.h"
-#include "types\image_buffer_format.h"
+#include "types/image_buffer_format.h"
 namespace rh::engine
 {
 enum class ImageDimensions
