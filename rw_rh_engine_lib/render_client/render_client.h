@@ -19,6 +19,7 @@ class RenderClient
     // TODO: Remove after refactoring
     SharedMemoryTaskQueue &GetTaskQueue()
     {
+        EnsureRenderDriverStarted();
         assert( TaskQueue );
         return *TaskQueue;
     }
@@ -28,9 +29,13 @@ class RenderClient
     ClientRenderState RenderState{};
 
   private:
+    bool StartRenderDriverProcess();
+    void EnsureRenderDriverStarted();
+
     std::unique_ptr<SharedMemoryTaskQueue> TaskQueue{};
     PROCESS_INFORMATION                    RenderDriverProcess{};
     std::unique_ptr<ClientPlugins>         Plugins{};
+    bool                                   RenderDriverStarted = false;
 };
 
 extern std::unique_ptr<RenderClient> gRenderClient;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <cstdint>
 #include <cstring>
 #include <system_error>
 #include <type_traits>
@@ -26,29 +27,29 @@ static void SetPointer( INT_PTR address, void *value )
 
 inline static void SetInt( INT_PTR address, int value )
 {
-    Patch( address, &value, sizeof( void * ) );
+    Patch( address, &value, sizeof( int ) );
 }
 
 inline static void RedirectCall( INT_PTR address, void *func )
 {
     auto func_iptr = reinterpret_cast<INT_PTR>( func );
 
-    INT_PTR temp = 0xE8;
+    unsigned char op = 0xE8;
+    int32_t       rel = static_cast<int32_t>( func_iptr - ( address + 5 ) );
 
-    Patch( address, &temp, sizeof( unsigned char ) );
-    temp = func_iptr - ( address + 5 );
-    Patch( ( address + 1 ), &temp, sizeof( void * ) );
+    Patch( address, &op, sizeof( op ) );
+    Patch( ( address + 1 ), &rel, sizeof( rel ) );
 }
 
 inline static void RedirectJump( INT_PTR address, void *func )
 {
     auto func_iptr = reinterpret_cast<INT_PTR>( func );
 
-    INT_PTR temp = 0xE9;
+    unsigned char op = 0xE9;
+    int32_t       rel = static_cast<int32_t>( func_iptr - ( address + 5 ) );
 
-    Patch( address, &temp, sizeof( unsigned char ) );
-    temp = func_iptr - ( address + 5 );
-    Patch( ( address + 1 ), &temp, sizeof( void * ) );
+    Patch( address, &op, sizeof( op ) );
+    Patch( ( address + 1 ), &rel, sizeof( rel ) );
 }
 
 inline static void Nop( INT_PTR address, SIZE_T size )
