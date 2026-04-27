@@ -6,9 +6,22 @@
 #include <rw_engine/rh_backend/im3d_backend.h>
 #include <rw_engine/rw_rh_convert_funcs.h>
 #include <rw_engine/system_funcs/rw_device_system_globals.h>
+#include <unordered_map>
 
 namespace rh::rw::engine
 {
+namespace
+{
+std::unordered_map<int32_t, uintptr_t> gRenderStatesCache = {
+    { rwRENDERSTATETEXTURERASTER, 0 },
+    { rwRENDERSTATEZTESTENABLE, 1 },
+    { rwRENDERSTATEZWRITEENABLE, 1 },
+    { rwRENDERSTATEVERTEXALPHAENABLE, 0 },
+    { rwRENDERSTATESRCBLEND, rwBLENDSRCALPHA },
+    { rwRENDERSTATEDESTBLEND, rwBLENDINVSRCALPHA },
+    { rwRENDERSTATECULLMODE, rwCULLMODECULLBACK } };
+} // namespace
+
 void *_rwIm3DOpen( void *instance, [[maybe_unused]] int32_t offset,
                    [[maybe_unused]] int32_t size )
 {
@@ -152,6 +165,7 @@ void RwGameHooks::Patch( const RwPointerTable &pointerTable )
 
 int32_t RwGameHooks::SetRenderState( int32_t nState, void *pParam )
 {
+    gRenderStatesCache[nState] = reinterpret_cast<uintptr_t>( pParam );
     if ( !gRenderClient )
     {
         debug::DebugLogger::Log(
@@ -167,9 +181,17 @@ int32_t RwGameHooks::SetRenderState( int32_t nState, void *pParam )
 int32_t RwGameHooks::GetRenderState( [[maybe_unused]] int32_t nState,
                                      void *                   pParam )
 {
-    /* debug::DebugLogger::Log( "RWGAMEHOOKS_LOG: GetRenderState:" +
-                              std::to_string( nState ) );*/
-    *static_cast<uint32_t *>( pParam ) = 0;
+    if ( pParam == nullptr )
+        return false;
+
+    auto state_it = gRenderStatesCache.find( nState );
+    if ( state_it == gRenderStatesCache.end() )
+    {
+        *static_cast<uintptr_t *>( pParam ) = 0;
+        return true;
+    }
+
+    *static_cast<uintptr_t *>( pParam ) = state_it->second;
     return true;
 }
 
