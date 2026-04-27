@@ -83,7 +83,7 @@ jobs:
         run: cmake $GITHUB_WORKSPACE
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake
-          -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /std:c++latest /W4 /WX- /GR /EHsc  /MT"
+          -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /std:c++latest /W0 /WX- /GR /EHsc  /MT"
           -DARCH_64BIT=ON
           -DBUILD_32BIT_LIBS=ON
           -DGTA_3_FOLDER="${{runner.workspace}}\\artifacts\\gta3\\"
@@ -109,7 +109,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake
           -DCMAKE_C_FLAGS="-m32"
-          -DCMAKE_CXX_FLAGS="-m32 /DWIN32 /D_WINDOWS /std:c++latest /W4 /WX- /GR /EHsc  /MT"
+          -DCMAKE_CXX_FLAGS="-m32 /DWIN32 /D_WINDOWS /std:c++latest /W0 /WX- /GR /EHsc  /MT"
           -DBUILD_32BIT_LIBS=ON
           -DGTA_3_FOLDER="${{runner.workspace}}\\artifacts\\gta3\\"
           -DGTA_VC_FOLDER="${{runner.workspace}}\\artifacts\\gtavc\\"
