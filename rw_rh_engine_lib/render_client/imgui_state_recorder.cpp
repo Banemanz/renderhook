@@ -32,7 +32,7 @@ LRESULT ImGuiImplWin32WndProcHandler( HWND hwnd, UINT msg, WPARAM w_param,
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
     {
-        int button;
+        int button = -1;
         if ( msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK )
         {
             button = 0;
@@ -51,7 +51,8 @@ LRESULT ImGuiImplWin32WndProcHandler( HWND hwnd, UINT msg, WPARAM w_param,
         }
         if ( !input_state.IsAnyMouseDown() && ::GetCapture() == nullptr )
             ::SetCapture( hwnd );
-        input_state.MouseDown[button] = true;
+        if ( button != -1 )
+            input_state.MouseDown[button] = true;
         return 0;
     }
     case WM_LBUTTONUP:
@@ -59,7 +60,7 @@ LRESULT ImGuiImplWin32WndProcHandler( HWND hwnd, UINT msg, WPARAM w_param,
     case WM_MBUTTONUP:
     case WM_XBUTTONUP:
     {
-        int button;
+        int button = -1;
         if ( msg == WM_LBUTTONUP )
         {
             button = 0;
@@ -76,7 +77,8 @@ LRESULT ImGuiImplWin32WndProcHandler( HWND hwnd, UINT msg, WPARAM w_param,
         {
             button = ( GET_XBUTTON_WPARAM( w_param ) == XBUTTON1 ) ? 3 : 4;
         }
-        input_state.MouseDown[button] = false;
+        if ( button != -1 )
+            input_state.MouseDown[button] = false;
         if ( !input_state.IsAnyMouseDown() && ::GetCapture() == hwnd )
             ::ReleaseCapture();
         return 0;

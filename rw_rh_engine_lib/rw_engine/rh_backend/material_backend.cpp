@@ -22,13 +22,13 @@ MaterialData ConvertMaterialData( RpMaterial *material )
     {
         auto &raster =
             BackendRasterPlugin::GetData( material->texture->raster );
-        tex_id = raster.mImageId;
+        tex_id = static_cast<int32_t>( raster.mImageId );
     }
     auto spec_tex = m_b.mSpecTex;
     if ( spec_tex && spec_tex->raster )
     {
         auto &raster = BackendRasterPlugin::GetData( spec_tex->raster );
-        spec_tex_id  = raster.mImageId;
+        spec_tex_id = static_cast<int32_t>( raster.mImageId );
     }
     return MaterialData{ tex_id, material->color, spec_tex_id,
                          material->surfaceProps.specular };
@@ -38,14 +38,14 @@ int32_t BackendMaterialPlugin::Offset = -1;
 
 BackendMaterialPlugin::BackendMaterialPlugin( const PluginPtrTable &plugin_cb )
 {
-    auto ctor = []( void *object, int32_t offsetInObject,
-                    int32_t sizeInObject ) {
+    auto ctor = []( void *object, [[maybe_unused]] int32_t offsetInObject,
+                    [[maybe_unused]] int32_t sizeInObject ) {
         auto ext = GetAddress( static_cast<RpMaterial *>( object ) );
         new ( ext ) BackendMaterialExt;
         return object;
     };
-    auto dtor = []( void *object, int32_t offsetInObject,
-                    int32_t sizeInObject ) {
+    auto dtor = []( void *object, [[maybe_unused]] int32_t offsetInObject,
+                    [[maybe_unused]] int32_t sizeInObject ) {
         auto &ext = GetData( static_cast<RpMaterial *>( object ) );
         ext.~BackendMaterialExt();
         return object;
