@@ -12,6 +12,10 @@
 #endif
 #include <Windows.h>
 
+#if !defined( ImGuiKey_KeypadEnter ) && defined( ImGuiKey_KeyPadEnter )
+#define ImGuiKey_KeypadEnter ImGuiKey_KeyPadEnter
+#endif
+
 namespace rh::rw::engine
 {
 
